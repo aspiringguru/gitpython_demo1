@@ -1,6 +1,7 @@
 from subprocess import *
 import sys
 import os
+import time
 
 def gitcommit(repo_dir, filename="."):
   '''
@@ -62,5 +63,17 @@ def gitcommit(repo_dir, filename="."):
   return success_value
 
 repo_dir=os.getcwd()
+#
+filename = 'temp1.txt'
+if os.path.exists(filename):
+    append_write = 'a' # append if already exists
+else:
+    append_write = 'w' # make a new file if not
+
+f = open(filename,append_write)
+curr_time = time.strftime("%Y/%m/%d/ %H:%M:%S")
+f.write(curr_time+'\n')
+f.close()
+
 result = gitcommit(filename=".", repo_dir=repo_dir)
 print("result:", result)
