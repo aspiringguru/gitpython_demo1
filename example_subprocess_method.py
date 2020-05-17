@@ -62,4 +62,5 @@ def gitcommit(repo_dir, filename="."):
   return success_value
 
 repo_dir=os.getcwd()
-gitcommit(filename=".", repo_dir=repo_dir)
+result = gitcommit(filename=".", repo_dir=repo_dir)
+result
