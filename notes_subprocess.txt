@@ -1,0 +1,246 @@
+https://steadylearner.com/blog/read/How-to-automatically-commit-files-to-GitHub-with-Python
+ssd. now part of python3. no pip install required.
+
+https://docs.python.org/3/library/subprocess.html
+https://pymotw.com/3/subprocess/
+cd /mnt/d/2020/coding/auto_upload_github
+
+import subprocess
+subprocess.run(["ls", "-l"])
+subprocess.run("echo 'I will automate everythig with Python.'", check=True, shell=True)
+
+output = subprocess.run(["ls", "-l", "/dev/null"], capture_output=True)
+type(output)
+#<class 'subprocess.CompletedProcess'>
+
+output.returncode
+
+dir(output)
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__',
+'__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__',
+'__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__',
+'__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__',
+'__str__', '__subclasshook__', '__weakref__', 'args', 'check_returncode',
+'returncode', 'stderr', 'stdout']
+
+output.args
+#returns the input arguements
+
+output.returncode
+#returns 0 for success,
+#returns 2 for syntax error
+#exit status of 0 indicates that it ran successfully.
+#negative value -N indicates that the child was terminated by signal N (POSIX only).
+
+output.stderr
+#captures error message
+#if no error message content is ''  nb: this is not None.
+"".__eq__(output.stderr)
+
+output.stdout
+
+#-------------------------------------------------------------------------------
+#https://wiki.paparazziuav.org/wiki/Github_manual_for_Ubuntu
+#get existing config setup from windows git bash
+git config --list
+#
+user.name=aspiringguru
+user.email=bmatthewtaylor@gmail.com
+
+git config --global user.name "aspiringguru"
+git config --global user.email "bmatthewtaylor@gmail.com"
+
+#if ~/.ssh does not exist (first time using ssh or ssh-keygen)
+mkdir -p ~/.ssh
+cd ~/.ssh
+ssh-keygen -t rsa -C "bmatthewtaylor@gmail.com"
+#this generates /home/<your-user-name>/.ssh/id_rsa & id_rsa.pub
+ls -la ~/.ssh/
+less ~/.ssh/id_rsa
+less ~/.ssh/id_rsa.pub
+#install gedit if not already
+sudo apt-get update
+sudo apt install gedit
+gedit  --version
+gedit id_rsa.pub
+#nb: gedit will not work on ubuntu in windows since no desktop
+less id_rsa.pub
+#loginto github > Account Settings > SSH Keys > Add another public key
+#https://github.com/settings/keys
+#copy paste content of ~/.ssh/id_rsa.pub into new key field on github.
+ssh-add
+#above returns error
+
+
+eval $(ssh-agent)
+ps aux | grep ssh
+#these should return same pid number
+
+
+printenv | grep SSH_AUTH_SOCK
+#ssh commands talk to the ssh-agent using the SSH_AUTH_SOCK environment variable
+
+cd /mnt/d/2020/coding/auto_upload_github
+git init
+ls -la
+git commit -m 'first commit'
+#create new repo on github if needed.
+#github will give you instructions like this.
+git remote add origin https://github.com/<your-github-username>/<your-git-repo-name>.git
+git push -u origin master
+#the above needs to be changed to set-url otherwise will get error message like this.
+#error: asks for username
+git push -u origin master
+Username for 'https://github.com':
+
+git remote set-url origin git@github.com:USERNAME/REPOSITORY.git
+git push -u origin master
+#-------------------------------------------------------------------------------
+import subprocess
+output = subprocess.run("git add .", check=True, shell=True)
+output.returncode
+output.stderr
+#
+output = subprocess.run(f"git commit -m 'commit message one'", check=True, shell=True)
+output.returncode
+output.stderr
+#
+output = subprocess.run("git push -u origin master -f", check=True, shell=True)
+output.returncode
+output.stderr
+#
+#-------------------------------------------------------------------------------
+import subprocess
+output = subprocess.run("git add .", check=True, shell=True)
+if output.returncode==0:
+  output = subprocess.run(f"git commit -m 'commit message one'", check=True, shell=True)
+  if output.returncode==0:
+    output = subprocess.run("git push -u origin master -f", check=True, shell=True)
+    if output.returncode==0:
+      print("success.")
+  else:
+    print("error @ git push.")
+    print("output.returncode:", output.returncode)
+else:
+  print("error @ git add.")
+  print("output.returncode:", output.returncode)
+#-------------------------------------------------------------------------------
+import subprocess
+import sys
+output=None
+try:
+  print("start git add.")
+  output = subprocess.run("git add .", check=True, stderr=subprocess.STDOUT, shell=True)
+  print("git add completed.")
+  print("git add:output.returncode:", output.returncode)
+  print("git add:output.stdout:", output.stdout)
+  print("git add:output.stderr:", output.stderr)
+  if output.returncode==0:
+    print("start git commit.")
+    output = subprocess.run(f"git commit -m 'commit message three'", check=True, stderr=subprocess.STDOUT, shell=True)
+    #exits to exception here when error occurs dueing git commit.
+    print("git commit completed.")
+    print("git commit:output.returncode:", output.returncode)
+    print("git commit:output.stdout:", output.stdout)
+    print("git commit:output.stderr:", output.stderr)
+    if output.returncode==0:
+      print("start git push.")
+      output = subprocess.run("git push -u origin master -f", check=True, stderr=subprocess.STDOUT, shell=True)
+      print("git push completed.")
+      print("git push:output.returncode:", output.returncode)
+      print("git push:output.stdout:", output.stdout)
+      print("git push:output.stderr:", output.stderr)
+      if output.returncode==0:
+        print("success @ git push, output.returncode==0.")
+      else:
+        print("error @ git push.")
+        print("output.returncode:", output.returncode)
+        print("output.stdout:", output.stdout)
+        print("output.stderr:", output.stderr)
+    else:
+      print("error @ git commit.")
+      print("output.returncode:", output.returncode)
+      print("output.stdout:", output.stdout)
+      print("output.stderr:", output.stderr)
+  else:
+    print("error @ git add.")
+    print("output.returncode:", output.returncode)
+    print("output.stderr:", output.stderr)
+except subprocess.CalledProcessError as error:
+  print("CalledProcessError error caught.")
+  print('CalledProcessError:An exception occurred: {}'.format(error))
+  print("CalledProcessError:output:", output)
+  print("CalledProcessError:output.returncode:", output.returncode)
+  print("CalledProcessError:output.stdout:", output.stdout)
+  print("CalledProcessError:output.stderr:", output.stderr)
+  print("CalledProcessError:sys.exc_info()[0]:", sys.exc_info()[0])
+#error traps below are redundant.
+except BaseException as error:
+  print("BaseException error caught.")
+  print('An exception occurred: {}'.format(error))
+  print("BaseException:output:", output)
+  print("BaseException:output.returncode:", output.returncode)
+  print("BaseException:output.stdout:", output.stdout)
+  print("BaseException:output.stderr:", output.stderr)
+  print("BaseException:sys.exc_info()[0]:", sys.exc_info()[0])
+except Exception as e:
+  print("exception:", e)
+  print("exception:output:", output)
+  print("exception:output.returncode:", output.returncode)
+  print("exception:output.stderr:", output.stderr)
+#-------------------------------------------------------------------------------
+#test another method to find failure to commit when no updates.
+import subprocess
+output = subprocess.getoutput("git add .")
+output
+output = subprocess.getoutput("git commit -m 'commit message fourA'")
+output
+#nb nothing to commit returned in string. no error message.
+output = subprocess.getoutput("git push -u origin master")
+output
+#-------------------------------------------------------------------------------
+from subprocess import *
+import sys
+try:
+  print("start git add.")
+  #output = run("git add .", check=True, stdout=PIPE, stderr=PIPE, shell=True)
+  output = run("git add .", check=True, capture_output=True, shell=True)
+  print("git add completed.")
+  print("output.stderr:", "'"+output.stderr.decode('utf-8')+"'")
+  print("output.stdout:", "'"+output.stdout.decode('utf-8')+"'")
+  print("output.stderr==None:", output.stderr==None)
+  print("output.stdout==None:", output.stdout==None)
+  print("output.returncode:", output.returncode)
+  if output.returncode==0:
+    output=None
+    print("start git commit.")
+    #output = run(f"git commit -m 'commit message three'", check=True, stdout=PIPE, stderr=PIPE, shell=True)
+    output = run("git commit -m 'commit message three'", check=True, capture_output=True, shell=True)
+    #exits to exception here when error occurs dueing git commit.
+    print("git commit completed.")
+    print("output.stderr:", output.stderr.decode('utf-8'))
+    print("output.stdout:", output.stdout.decode('utf-8'))
+    print("output.stderr==None:", output.stderr==None)
+    print("output.stdout==None:", output.stdout==None)
+    print("output.returncode:", output.returncode)
+    if output.returncode==0:
+      output=None
+      print("start git push.")
+      #output = run("git push -u origin master -f", check=True, stdout=PIPE, stderr=PIPE, shell=True)
+      output = run("git push -u origin master -f", capture_output=True)
+      print("git push completed.")
+      print("output.stderr:", output.stderr)
+      print("output.stdout:", output.stdout)
+      print("output.stderr==None:", output.stderr==None)
+      print("output.stdout==None:", output.stdout==None)
+      print("output.returncode:", output.returncode)
+      if output.returncode==0:
+        print("success @ git push, output.returncode==0.")
+except CalledProcessError as error:
+  print("CalledProcessError error caught.")
+  print('CalledProcessError:An exception occurred: {}'.format(error))
+  print("CalledProcessError:sys.exc_info()[0]:", sys.exc_info()[0])
+  print("CalledProcessError:output:", output)
+  print("CalledProcessError:output.stderr:", output.stderr)
+  print("CalledProcessError:output.stdout:", output.stdout)
+#-------------------------------------------------------------------------------
