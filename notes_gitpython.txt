@@ -1,5 +1,55 @@
+cd /mnt/d/2020/coding/auto_upload_github
 https://gitpython.readthedocs.io/en/stable/intro.html
 
 pip install gitpython
 
 https://gitpython.readthedocs.io/en/stable/tutorial.html#tutorial-label
+https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=.add#initializing-a-repository
+
+
+from git import Repo
+repo = Repo("./")
+output = repo.git.add(update=True)
+
+output_commit = repo.git.commit("commit via gitpython")
+output_commit
+
+
+#---------------
+import git
+import os
+repo_dir = os.getcwd()
+r = git.Repo.init(repo_dir)
+r.index.add(".")
+r.index.commit("initial commit")
+
+'''
+git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+'''
+origin = repo.remote(name='origin')
+origin
+origin.push()
+
+#----------------------------------
+git init
+git add .
+git commit -m "first commit"
+#git remote add origin https://github.com/aspiringguru/gitpython_demo1.git
+git remote set-url origin git@github.com:aspiringguru/gitpython_demo1.git
+git push -u origin master
+#----------------------------------
+from git import Repo
+repo = Repo('.')  # if repo is CWD just do '.'
+repo
+output_add = repo.index.add(['newfile.txt'])
+#output_add = repo.index.add(['.'])
+output_add
+output_commit = repo.index.commit('my commit description')
+output_commit
+origin = repo.remote('origin')
+origin
+output_push = origin.push()
+output_push
